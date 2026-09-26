@@ -1,8 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type TableColumn<T> = {
   key: keyof T;
@@ -14,7 +15,7 @@ type DataTableProps<T extends { id: string }> = {
   rows: T[];
   columns: TableColumn<T>[];
   pageSize?: number;
-  onAction?: (row: T) => void;
+  itemLabel?: string;
   renderActions?: (row: T, close: () => void) => ReactNode;
   emptyMessage?: string;
 };
@@ -23,11 +24,44 @@ export default function DataTable<T extends { id: string }>({
   rows,
   columns,
   pageSize = 5,
-  onAction,
+  itemLabel = "records",
   renderActions,
   emptyMessage = "No records found",
 }: DataTableProps<T>) {
   const [page, setPage] = useState(1);
+  const [actionMenu, setActionMenu] = useState<{
+    row: T;
+    top: number;
+    left: number;
+    opensUp: boolean;
+  } | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!actionMenu) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (
+        !actionMenuRef.current?.contains(target) &&
+        !target.closest("[data-row-action-trigger]")
+      ) {
+        setActionMenu(null);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActionMenu(null);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [actionMenu]);
+
   const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
   const visibleRows = useMemo(
     () => rows.slice((page - 1) * pageSize, page * pageSize),
@@ -71,11 +105,28 @@ export default function DataTable<T extends { id: string }>({
                     <button
                       className="inline-grid h-[39px] w-[39px] place-items-center rounded-full border-0 bg-[#f1f5f9] text-[#62758d] hover:bg-[#e6edf5] hover:text-[#172231]"
                       aria-label={`Actions for ${row.id}`}
-                      onClick={() => onAction?.(row)}
+                      aria-expanded={actionMenu?.row.id === row.id}
+                      data-row-action-trigger
+                      onClick={(event) => {
+                        if (actionMenu?.row.id === row.id) {
+                          setActionMenu(null);
+                          return;
+                        }
+
+                        const bounds = event.currentTarget.getBoundingClientRect();
+                        setActionMenu({
+                          row,
+                          top:
+                            bounds.bottom + 250 > window.innerHeight
+                              ? bounds.top - 8
+                              : bounds.bottom + 8,
+                          left: bounds.right,
+                          opensUp: bounds.bottom + 250 > window.innerHeight,
+                        });
+                      }}
                     >
                       <MoreVertical size={18} />
                     </button>
-                    {renderActions?.(row, () => onAction?.(row))}
                   </td>
                 </tr>
               ))
@@ -93,10 +144,27 @@ export default function DataTable<T extends { id: string }>({
         </table>
       </div>
 
+      {actionMenu && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={actionMenuRef}
+              className={`fixed z-[70] w-52 -translate-x-full rounded-xl border border-[#e3ebf3] bg-white p-2.5 shadow-[0_15px_34px_rgba(54,79,107,0.16)] ${
+                actionMenu.opensUp ? "-translate-y-full" : ""
+              }`}
+              style={{ top: actionMenu.top, left: actionMenu.left }}
+            >
+              {renderActions?.(actionMenu.row, () => {
+                setActionMenu(null);
+              })}
+            </div>,
+            document.body,
+          )
+        : null}
+
       <div className="flex flex-col items-start justify-between gap-3 px-2 pt-6 text-xs text-[#899ab0] sm:flex-row sm:items-center">
         <span>
           Showing {rows.length ? (page - 1) * pageSize + 1 : 0}-
-          {Math.min(page * pageSize, rows.length)} of {rows.length} administrators
+          {Math.min(page * pageSize, rows.length)} of {rows.length} {itemLabel}
         </span>
         <div className="flex gap-1.5">
           <button

@@ -4,22 +4,18 @@ import {
   Bell,
   CircleDollarSign,
   FileText,
-  LayoutDashboard,
   Layers3,
-  Settings,
   Users,
   X,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
-  ["Dashboard", "/dashboard", LayoutDashboard],
   ["Manage Category", "/category", Layers3],
   ["Manage News", "/news", FileText],
   ["Manage Ads", "/ads", CircleDollarSign],
   ["Notification", "/notification", Bell],
   ["Administrators", "/adminstrator", Users],
-  ["Settings", "/settings", Settings],
 ] as const;
 
 type SidebarProps = { open: boolean; onClose: () => void };

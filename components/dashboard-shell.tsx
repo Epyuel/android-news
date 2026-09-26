@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut, updatePassword } from "firebase/auth";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
+import DashboardToast from "@/components/dashboard-toast";
 import { auth } from "@/lib/firebase";
 
 type DashboardShellProps = { children: React.ReactNode };
@@ -14,6 +15,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [noticeTone, setNoticeTone] = useState<"success" | "error">("success");
   const [displayName, setDisplayName] = useState("Admin");
 
   useEffect(() => {
@@ -38,13 +40,16 @@ export default function DashboardShell({ children }: DashboardShellProps) {
     const password = window.prompt("Enter a new password (at least 6 characters)");
     if (!password) return;
     if (!auth.currentUser) {
+      setNoticeTone("error");
       setNotice("Sign in before changing your password.");
       return;
     }
     try {
       await updatePassword(auth.currentUser, password);
+      setNoticeTone("success");
       setNotice("Password updated successfully.");
     } catch {
+      setNoticeTone("error");
       setNotice("Please sign in again before changing your password.");
     }
   };
@@ -120,14 +125,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
 
           {children}
 
-          {notice && (
-            <button
-              className="fixed right-4 bottom-4 left-4 z-50 rounded-xl border border-[#dbe6f1] bg-[#172231] px-4 py-3 text-xs text-white shadow-[0_12px_30px_rgba(23,34,49,0.2)] md:right-8 md:left-auto"
-              onClick={() => setNotice("")}
-            >
-              {notice}
-            </button>
-          )}
+          {notice && <DashboardToast message={notice} tone={noticeTone} onDismiss={() => setNotice("")} />}
         </section>
       </div>
     </main>

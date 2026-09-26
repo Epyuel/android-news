@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Edit3, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
+import { Edit3, Eye, EyeOff, Plus, RotateCcw, Search, Trash2, X } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import DataTable, { type TableColumn } from "@/components/data-table";
+import ActionConfirmDialog from "@/components/action-confirm-dialog";
+import DashboardToast from "@/components/dashboard-toast";
 import DashboardShell from "@/components/dashboard-shell";
 import { auth } from "@/lib/firebase";
 
@@ -33,13 +35,29 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [rows, setRows] = useState<Administrator[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Administrator | null>(null);
   const [form, setForm] = useState<AdminForm>(emptyForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
+  const [noticeTone, setNoticeTone] = useState<"success" | "error">("success");
+  const showSuccess = (message: string) => {
+    setNoticeTone("success");
+    setNotice(message);
+  };
+  const showError = (message: string) => {
+    setNoticeTone("error");
+    setNotice(message);
+  };
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmation, setConfirmation] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    destructive?: boolean;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
 
   const loadRows = async (user: User) => {
     setLoading(true);
@@ -53,7 +71,7 @@ export default function AdminDashboard() {
         throw new Error(result.error || "Unable to load administrators.");
       setRows(result.users);
     } catch (error) {
-      setNotice(
+      showError(
         error instanceof Error
           ? error.message
           : "Unable to load administrators.",
@@ -101,8 +119,8 @@ export default function AdminDashboard() {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
+    setShowPassword(false);
     setDialogOpen(true);
-    setSelectedId(null);
   };
 
   const openEdit = (row: Administrator) => {
@@ -113,8 +131,8 @@ export default function AdminDashboard() {
       email: row.email,
       password: "",
     });
+    setShowPassword(false);
     setDialogOpen(true);
-    setSelectedId(null);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -143,14 +161,14 @@ export default function AdminDashboard() {
       if (!response.ok)
         throw new Error(result.error || "Unable to save administrator.");
       setDialogOpen(false);
-      setNotice(
+      showSuccess(
         editing
           ? "Administrator updated successfully."
           : "Administrator created successfully.",
       );
       if (auth.currentUser) await loadRows(auth.currentUser);
     } catch (error) {
-      setNotice(
+      showError(
         error instanceof Error
           ? error.message
           : "Unable to save administrator.",
@@ -161,8 +179,6 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (row: Administrator) => {
-    if (!window.confirm(`Delete ${row.username}? This cannot be undone.`))
-      return;
     try {
       const token = auth.currentUser ? await auth.currentUser.getIdToken() : "";
       const response = await fetch(
@@ -173,16 +189,24 @@ export default function AdminDashboard() {
       if (!response.ok)
         throw new Error(result.error || "Unable to delete administrator.");
       setRows((current) => current.filter((item) => item.id !== row.id));
-      setSelectedId(null);
-      setNotice("Administrator deleted successfully.");
+      showSuccess("Administrator deleted successfully.");
     } catch (error) {
-      setNotice(
+      showError(
         error instanceof Error
           ? error.message
           : "Unable to delete administrator.",
       );
     }
   };
+
+  const confirmDelete = (row: Administrator) =>
+    setConfirmation({
+      title: "Delete administrator?",
+      description: `The account for ${row.username} will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete administrator",
+      destructive: true,
+      onConfirm: () => handleDelete(row),
+    });
 
   return (
     <DashboardShell>
@@ -239,41 +263,35 @@ export default function AdminDashboard() {
           <DataTable
             rows={filteredRows}
             columns={columns}
-            onAction={(row) =>
-              setSelectedId((current) => (current === row.id ? null : row.id))
-            }
-            renderActions={(row) =>
-              row.id === selectedId ? (
-                <div className="absolute top-[58px] right-4 z-10 w-36 rounded-xl border border-[#e3ebf3] bg-white p-2 shadow-[0_15px_34px_rgba(54,79,107,0.16)]">
+            renderActions={(row, close) =>
+                <div>
                   <button
-                    className="flex w-full items-center gap-2 rounded-lg border-0 bg-transparent p-2.5 text-left text-xs text-[#40546d] hover:bg-[#f1f5fa]"
-                    onClick={() => openEdit(row)}
+                    className="flex w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-3 text-left text-sm text-[#40546d] hover:bg-[#f1f5fa]"
+                    onClick={() => {
+                      close();
+                      openEdit(row);
+                    }}
                   >
                     <Edit3 size={15} />
                     Edit
                   </button>
                   <button
-                    className="flex w-full items-center gap-2 rounded-lg border-0 bg-transparent p-2.5 text-left text-xs text-[#b95252] hover:bg-[#f1f5fa]"
-                    onClick={() => void handleDelete(row)}
+                    className="flex w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-3 text-left text-sm text-[#b95252] hover:bg-[#f1f5fa]"
+                    onClick={() => {
+                      close();
+                      confirmDelete(row);
+                    }}
                   >
                     <Trash2 size={15} />
                     Delete
                   </button>
                 </div>
-              ) : null
             }
           />
         )}
       </section>
 
-      {notice && (
-        <button
-          className="fixed right-4 bottom-4 left-4 z-50 rounded-xl border border-[#dbe6f1] bg-[#172231] px-4 py-3 text-xs text-white shadow-[0_12px_30px_rgba(23,34,49,0.2)] md:right-8 md:left-auto"
-          onClick={() => setNotice("")}
-        >
-          {notice}
-        </button>
-      )}
+      {notice && <DashboardToast message={notice} tone={noticeTone} onDismiss={() => setNotice("")} />}
 
       {dialogOpen && (
         <div
@@ -346,30 +364,50 @@ export default function AdminDashboard() {
             {!editing && (
               <label className="grid gap-1.5 text-xs font-bold text-[#536780]">
                 Temporary password
-                <input
-                  className="h-10 rounded-lg border border-[#dfe8f1] px-3 text-[#19283c] outline-none focus:border-[#8eaccb]"
-                  required
-                  minLength={6}
-                  type="password"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                />
+                <span className="flex h-10 items-center rounded-lg border border-[#dfe8f1] pr-1 focus-within:border-[#8eaccb]">
+                  <input
+                    className="h-full min-w-0 flex-1 rounded-lg border-0 bg-transparent px-3 text-[#19283c] outline-none"
+                    required
+                    minLength={6}
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(event) =>
+                      setForm({ ...form, password: event.target.value })
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-0 bg-transparent text-[#71839a] hover:bg-[#edf3f9]"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((shown) => !shown)}
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
               </label>
             )}
             {editing && (
               <label className="grid gap-1.5 text-xs font-bold text-[#536780]">
                 New password <span className="font-medium">optional</span>
-                <input
-                  className="h-10 rounded-lg border border-[#dfe8f1] px-3 text-[#19283c] outline-none focus:border-[#8eaccb]"
-                  minLength={6}
-                  type="password"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                />
+                <span className="flex h-10 items-center rounded-lg border border-[#dfe8f1] pr-1 focus-within:border-[#8eaccb]">
+                  <input
+                    className="h-full min-w-0 flex-1 rounded-lg border-0 bg-transparent px-3 text-[#19283c] outline-none"
+                    minLength={6}
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(event) =>
+                      setForm({ ...form, password: event.target.value })
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-0 bg-transparent text-[#71839a] hover:bg-[#edf3f9]"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((shown) => !shown)}
+                  >
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </span>
               </label>
             )}
             <button
@@ -385,6 +423,12 @@ export default function AdminDashboard() {
             </button>
           </form>
         </div>
+      )}
+      {confirmation && (
+        <ActionConfirmDialog
+          {...confirmation}
+          onCancel={() => setConfirmation(null)}
+        />
       )}
     </DashboardShell>
   );
