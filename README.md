@@ -1,3 +1,9 @@
+## TikTok downloader
+
+The mobile downloader uses this web app as a secure proxy. Set `FASTSAVER_API_KEY` in the web app's local environment and Vercel project settings. Keep this key server-side; do not add it to an `EXPO_PUBLIC_` variable. `.env.example` lists the server variable.
+
+Set `EXPO_PUBLIC_TIKTOK_DOWNLOADER_ENDPOINT` in the mobile app to the deployed endpoint, for example `https://your-app.vercel.app/api/tiktok/download`. FastSaverAPI currently offers 1,000 free credits without a payment card; a successful TikTok lookup costs 1.5 credits. Provider quotas and pricing can change.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -34,3 +40,8 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# TikTok downloader
+
+The mobile downloader uses the web app as a secure proxy. Set `FASTSAVER_API_KEY` in the web app's local environment and Vercel project settings. Keep this key server-side; do not add it to an `EXPO_PUBLIC_` variable.
+
+Set `EXPO_PUBLIC_TIKTOK_DOWNLOADER_ENDPOINT` in the mobile app to the deployed endpoint, for example `https://your-app.vercel.app/api/tiktok/download`. FastSaverAPI's free tier currently includes 1,000 credits without a payment card; a successful TikTok lookup costs 1.5 credits. Provider quotas and pricing can change.
