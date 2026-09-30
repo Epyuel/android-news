@@ -5,6 +5,7 @@ import {
   CircleDollarSign,
   FileText,
   Layers3,
+  Video,
   Users,
   X,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import { usePathname, useRouter } from "next/navigation";
 const navItems = [
   ["Manage Category", "/category", Layers3],
   ["Manage News", "/news", FileText],
+  ["Video management", "/video-management", Video],
   ["Manage Ads", "/ads", CircleDollarSign],
   ["Notification", "/notification", Bell],
   ["Administrators", "/adminstrator", Users],
