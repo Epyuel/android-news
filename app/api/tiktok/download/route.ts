@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
     const payload: unknown = await response.json();
     const result = typeof payload === 'object' && payload !== null
-      ? payload as { ok?: unknown; download_url?: unknown }
+      ? payload as { ok?: unknown; download_url?: unknown; caption?: unknown; thumbnail_url?: unknown }
       : undefined;
     const downloadUrl = result?.ok === true ? result.download_url : undefined;
 
@@ -68,7 +68,11 @@ export async function POST(request: Request) {
       return Response.json({ error: 'No downloadable video was found for this link.' }, { status: 404 });
     }
 
-    return Response.json({ downloadUrl });
+    return Response.json({
+      downloadUrl,
+      title: typeof result?.caption === 'string' ? result.caption : undefined,
+      thumbnail: typeof result?.thumbnail_url === 'string' ? result.thumbnail_url : undefined,
+    });
   } catch {
     return Response.json({ error: 'The video service is temporarily unavailable.' }, { status: 502 });
   }

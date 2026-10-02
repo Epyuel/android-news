@@ -6,6 +6,7 @@ import {
   FileText,
   Layers3,
   Share2,
+  Settings,
   Video,
   Users,
   X,
@@ -20,6 +21,7 @@ const navItems = [
   ["Manage Ads", "/ads", CircleDollarSign],
   ["Notification", "/notification", Bell],
   ["Administrators", "/adminstrator", Users],
+  ["Settings", "/settings", Settings],
 ] as const;
 
 type SidebarProps = { open: boolean; onClose: () => void };
