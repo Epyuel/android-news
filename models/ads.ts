@@ -22,9 +22,10 @@ export interface AdsConfiguration {
   admobInterstitialAdUnitId: string;
   admobNativeAdUnitId: string;
   admobAppOpenAdUnitId: string;
+  nativeAdsEnabled: boolean;
   placements: Record<AdPlacementKey, boolean>;
   interstitialAdInterval: number;
-  nativeAdIndex: number;
+  nativeAdInterval: number;
   nativeAdStyles: {
     postList: AdSize;
     videoList: AdSize;

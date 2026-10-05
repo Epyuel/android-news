@@ -20,6 +20,7 @@ const defaultConfig: AdsConfiguration = {
   admobInterstitialAdUnitId: "",
   admobNativeAdUnitId: "",
   admobAppOpenAdUnitId: "",
+  nativeAdsEnabled: true,
   placements: {
     bannerHome: true,
     bannerPostDetails: true,
@@ -35,7 +36,7 @@ const defaultConfig: AdsConfiguration = {
     appOpenResume: true,
   },
   interstitialAdInterval: 3,
-  nativeAdIndex: 4,
+  nativeAdInterval: 4,
   nativeAdStyles: {
     postList: "medium",
     videoList: "large",
@@ -65,7 +66,7 @@ const placementGroups: { title: string; options: [AdPlacementKey, string][] }[] 
   {
     title: "Native ads",
     options: [
-      ["nativePostList", "Post list"],
+      ["nativePostList", "News, video & saved lists"],
       ["nativePostDetails", "Post details"],
       ["nativeExitDialog", "Exit dialog"],
     ],
@@ -93,7 +94,8 @@ function normalizeConfig(value: Record<string, unknown>): AdsConfiguration {
     adStatus: value.adStatus === "off" ? "off" : "on",
     primaryAdNetwork: "admob",
     placements: { ...defaultConfig.placements, ...placements },
-    nativeAdIndex: Math.max(1, Number(value.nativeAdIndex) || 1),
+    nativeAdsEnabled: value.nativeAdsEnabled !== false,
+    nativeAdInterval: Math.max(1, Number(value.nativeAdInterval ?? value.nativeAdIndex) || 4),
     nativeAdStyles: { ...defaultConfig.nativeAdStyles, ...nativeAdStyles },
   } as AdsConfiguration;
 }
@@ -264,9 +266,9 @@ export default function AdsDashboard() {
                       <span className="font-medium text-[#8a9bb2]">Show after this many posts in the list.</span>
                     </label>
                     <label className={labelClass}>
-                      Native ad index
-                      <input className={fieldClass} type="number" min={1} max={100} value={form.nativeAdIndex} onChange={(event) => setForm((current) => ({ ...current, nativeAdIndex: Math.max(1, Number(event.target.value) || 1) }))} />
-                      <span className="font-medium text-[#8a9bb2]">First position in the post list; starts at 1.</span>
+                      Native ad interval
+                      <input className={fieldClass} type="number" min={1} max={100} value={form.nativeAdInterval} onChange={(event) => setForm((current) => ({ ...current, nativeAdInterval: Math.max(1, Number(event.target.value) || 1) }))} />
+                      <span className="font-medium text-[#8a9bb2]">Insert an ad after every N news, video, or saved items.</span>
                     </label>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -299,6 +301,17 @@ export default function AdsDashboard() {
                 {placementGroups.map((group) => (
                   <fieldset className="m-0 grid gap-2.5 border-0 border-t border-[#e8eef5] p-0 pt-4" key={group.title}>
                     <legend className="px-0 text-xs font-bold text-[#536780]">{group.title}</legend>
+                    {group.title === "Native ads" && (
+                      <label className="flex min-h-9 cursor-pointer items-center gap-3 text-[13px] font-semibold text-[#273950]">
+                        <input
+                          className="h-4 w-4 accent-[#237c63]"
+                          type="checkbox"
+                          checked={form.nativeAdsEnabled}
+                          onChange={(event) => setForm((current) => ({ ...current, nativeAdsEnabled: event.target.checked }))}
+                        />
+                        <span>Native ads on/off</span>
+                      </label>
+                    )}
                     {group.options.map(([key, label]) => (
                       <label className="flex min-h-9 cursor-pointer items-center gap-3 text-[13px] text-[#40546d]" key={key}>
                         <input
