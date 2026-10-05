@@ -3,9 +3,9 @@ export type AdSize = "small" | "medium" | "large";
 export type AdPlacementKey =
   | "bannerHome"
   | "bannerPostDetails"
-  | "bannerCategoryDetails"
-  | "bannerSearch"
-  | "bannerComment"
+  | "bannerVideo"
+  | "bannerDownload"
+  | "bannerSaved"
   | "interstitialPostList"
   | "interstitialPostDetails"
   | "nativePostList"

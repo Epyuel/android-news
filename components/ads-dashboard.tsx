@@ -23,9 +23,9 @@ const defaultConfig: AdsConfiguration = {
   placements: {
     bannerHome: true,
     bannerPostDetails: true,
-    bannerCategoryDetails: true,
-    bannerSearch: true,
-    bannerComment: true,
+    bannerVideo: true,
+    bannerDownload: true,
+    bannerSaved: true,
     interstitialPostList: true,
     interstitialPostDetails: true,
     nativePostList: true,
@@ -50,9 +50,9 @@ const placementGroups: { title: string; options: [AdPlacementKey, string][] }[] 
     options: [
       ["bannerHome", "Home page"],
       ["bannerPostDetails", "Post details"],
-      ["bannerCategoryDetails", "Category details"],
-      ["bannerSearch", "Search page"],
-      ["bannerComment", "Comment page"],
+      ["bannerVideo", "Video page"],
+      ["bannerDownload", "Download page"],
+      ["bannerSaved", "Saved page"],
     ],
   },
   {
@@ -93,6 +93,7 @@ function normalizeConfig(value: Record<string, unknown>): AdsConfiguration {
     adStatus: value.adStatus === "off" ? "off" : "on",
     primaryAdNetwork: "admob",
     placements: { ...defaultConfig.placements, ...placements },
+    nativeAdIndex: Math.max(1, Number(value.nativeAdIndex) || 1),
     nativeAdStyles: { ...defaultConfig.nativeAdStyles, ...nativeAdStyles },
   } as AdsConfiguration;
 }
@@ -264,8 +265,8 @@ export default function AdsDashboard() {
                     </label>
                     <label className={labelClass}>
                       Native ad index
-                      <input className={fieldClass} type="number" min={0} max={100} value={form.nativeAdIndex} onChange={(event) => setForm((current) => ({ ...current, nativeAdIndex: Math.max(0, Number(event.target.value) || 0) }))} />
-                      <span className="font-medium text-[#8a9bb2]">First position in the post list; starts at 0.</span>
+                      <input className={fieldClass} type="number" min={1} max={100} value={form.nativeAdIndex} onChange={(event) => setForm((current) => ({ ...current, nativeAdIndex: Math.max(1, Number(event.target.value) || 1) }))} />
+                      <span className="font-medium text-[#8a9bb2]">First position in the post list; starts at 1.</span>
                     </label>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
