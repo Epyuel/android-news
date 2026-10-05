@@ -144,11 +144,13 @@ export default function NewsDashboard() {
         snapshot.docs.map((item) => {
           const data = item.data() as Omit<News, "id" | "createdAt" | "updatedAt"> & {
             category?: string;
+            views?: number;
             createdAt?: { toDate: () => Date };
             updatedAt?: { toDate: () => Date };
           };
           return {
             ...data,
+            views: Number.isFinite(data.views) ? Math.max(0, Number(data.views)) : 0,
             categoryId: data.categoryId || data.category || "",
             id: item.id,
             createdAt: data.createdAt?.toDate().toISOString(),
@@ -239,6 +241,15 @@ export default function NewsDashboard() {
       render: (value) => formatDate(String(value)),
     },
     {
+      key: "views",
+      label: "Views",
+      render: (value) => (
+        <span className="inline-flex min-w-10 justify-center rounded-full bg-[#eaf3ff] px-3 py-1.5 text-xs font-semibold tabular-nums text-[#2878c8]">
+          {Number(value) || 0}
+        </span>
+      ),
+    },
+    {
       key: "categoryId",
       label: "Category",
       render: (value) => categoryNameFor(String(value), categories),
@@ -308,6 +319,7 @@ export default function NewsDashboard() {
       const payload: NewsInput = {
         ...form,
         image,
+        views: editing?.views ?? 0,
         description: form.description || `<p>${form.descriptionText}</p>`,
         status: form.status || "active",
       };

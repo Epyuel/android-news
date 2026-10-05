@@ -11,6 +11,7 @@ export interface News {
   image: string;
   description: string;
   descriptionText: string;
+  views: number;
   status: NewsStatus;
   createdAt?: string;
   updatedAt?: string;
