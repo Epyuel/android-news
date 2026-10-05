@@ -115,12 +115,12 @@ export default function DashboardShell({ children }: DashboardShellProps) {
               )}
             </div>
 
-            <button
+            {/* <button
               className="grid h-[47px] w-[47px] place-items-center rounded-full border-0 bg-white/70 text-[#172231] shadow-[0_8px_22px_rgba(73,100,130,0.08)]"
               aria-label="Notifications"
             >
               <Bell size={20} strokeWidth={1.8} />
-            </button>
+            </button> */}
           </header>
 
           {children}
