@@ -1,1 +1,196 @@
 @import "tailwindcss";
+
+.rich-text-editor .ql-toolbar.ql-snow {
+  border: 0;
+  border-bottom: 1px solid #edf2f7;
+  background: #f8fbff;
+  padding: 10px;
+}
+
+.rich-text-editor .ql-toolbar .ql-table::after {
+  content: "▦";
+  font-size: 18px;
+  line-height: 1;
+}
+
+.rich-text-editor .ql-container.ql-snow {
+  border: 0;
+  color: #26384f;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.rich-text-editor .ql-editor {
+  min-height: 18rem;
+  line-height: 1.75;
+  font-weight: 400;
+}
+
+.rich-text-editor .ql-editor table {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+.rich-text-editor .ql-editor td,
+.rich-text-editor .ql-editor th {
+  position: relative;
+  border: 1px solid #cbd5e1;
+  padding: 6px 8px;
+}
+
+.rich-text-editor .ql-editor td::after,
+.rich-text-editor .ql-editor th::after {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 7px;
+  height: 100%;
+  content: "";
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.rich-text-editor .ql-editor.is-table-resizing,
+.rich-text-editor .ql-editor.is-table-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: #94a3b8;
+  font-style: normal;
+}
+
+.rich-text-editor .ql-toolbar .ql-formats:nth-child(9) .ql-emoji {
+  display: none;
+}
+
+.rich-text-editor .ql-toolbar .ql-table::after {
+  content: "Tbl";
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rich-text-editor .ql-toolbar .ql-emojiPicker {
+  width: 44px;
+}
+
+.rich-text-editor .ql-toolbar .ql-deleteRow,
+.rich-text-editor .ql-toolbar .ql-deleteColumn,
+.rich-text-editor .ql-toolbar .ql-deleteTable {
+  width: auto;
+  min-width: 42px;
+  padding: 0 3px;
+}
+
+.rich-text-editor .ql-toolbar .ql-emoji {
+  display: none;
+}
+
+.rich-text-editor .ql-toolbar .ql-emojiPicker::after {
+  content: "Emoji";
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rich-text-editor .ql-toolbar .ql-deleteRow::after {
+  content: "Del row";
+  font-size: 9px;
+}
+
+.rich-text-editor .ql-toolbar .ql-deleteColumn::after {
+  content: "Del col";
+  font-size: 9px;
+}
+
+.rich-text-editor .ql-toolbar .ql-deleteTable::after {
+  content: "Del table";
+  font-size: 9px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-label::before {
+  content: "Format";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle {
+  width: 120px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item {
+  min-width: 110px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item:not([data-value])::before {
+  content: "Normal";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Title"]::before {
+  content: "Title";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Subtitle"]::before {
+  content: "Subtitle";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Heading 1"]::before {
+  content: "Heading 1";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Heading 2"]::before {
+  content: "Heading 2";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Heading 3"]::before {
+  content: "Heading 3";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Quote"]::before {
+  content: "Quote";
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-formatStyle .ql-picker-item[data-value="Code"]::before {
+  content: "Code";
+}
+
+.rich-text-editor .ql-editor .ql-font-sans-serif,
+.rich-text-editor .ql-font-sans-serif {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.rich-text-editor .ql-editor .ql-font-serif,
+.rich-text-editor .ql-font-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.rich-text-editor .ql-editor .ql-font-monospace,
+.rich-text-editor .ql-font-monospace {
+  font-family: Consolas, Monaco, monospace;
+}
+
+.rich-text-editor .ql-editor .ql-font-cursive,
+.rich-text-editor .ql-font-cursive {
+  font-family: cursive;
+}
+
+.rich-text-editor .ql-editor .ql-font-fantasy,
+.rich-text-editor .ql-font-fantasy {
+  font-family: fantasy;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-label[data-value="sans-serif"]::before,
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-item[data-value="sans-serif"]::before {
+  content: "Sans Serif";
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-label[data-value="cursive"]::before,
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-item[data-value="cursive"]::before {
+  content: "Cursive";
+  font-family: cursive;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-label[data-value="fantasy"]::before,
+.rich-text-editor .ql-toolbar .ql-picker.ql-font .ql-picker-item[data-value="fantasy"]::before {
+  content: "Fantasy";
+  font-family: fantasy;
+}

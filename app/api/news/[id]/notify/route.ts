@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   adminErrorResponse,
   authorizeAdmin,
-  getAdminMessaging,
+  sendPushToRegisteredDevices,
 } from "@/lib/firebase-admin";
 
 type RouteContext = {
@@ -30,13 +30,10 @@ export async function POST(request: Request, context: RouteContext) {
     if (!data.title?.trim() || !data.descriptionText?.trim())
       throw new Error("A title and description are required to send a notification.");
 
-    const topic = process.env.FCM_NEWS_TOPIC || "news";
-    const response = await getAdminMessaging().send({
-      topic,
-      notification: {
-        title: data.title.trim(),
-        body: truncateText(data.descriptionText),
-      },
+    await sendPushToRegisteredDevices({
+      title: data.title.trim(),
+      body: truncateText(data.descriptionText),
+      image: data.image,
       data: {
         type: "news",
         newsId: id,
@@ -45,7 +42,7 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    return NextResponse.json({ success: true, messageId: response, topic });
+    return NextResponse.json({ success: true });
   } catch (error) {
     const { message, status } = adminErrorResponse(error);
     return NextResponse.json({ error: message }, { status });

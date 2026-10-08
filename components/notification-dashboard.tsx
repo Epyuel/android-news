@@ -297,7 +297,7 @@ export default function NotificationDashboard() {
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.error || "Unable to send notification.");
-      showSuccess(`Notification sent to ${result.topic}.`);
+      showSuccess("Notification sent to mobile readers.");
     } catch (error) {
       showError(
         error instanceof Error ? error.message : "Unable to send notification.",

@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace("/category");
+      if (user) router.replace("/news");
     });
     return unsubscribe;
   }, [router]);
@@ -46,7 +46,7 @@ export default function LoginPage() {
         remember ? browserLocalPersistence : browserSessionPersistence,
       );
       await signInWithEmailAndPassword(auth, email.trim(), password);
-      router.replace("/category");
+      router.replace("/news");
     } catch {
       setNotice("Email or password is incorrect.");
     } finally {

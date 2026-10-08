@@ -14,12 +14,12 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
-  ["Manage Category", "/category", Layers3],
   ["Manage News", "/news", FileText],
+  ["Notification", "/notification", Bell],
   ["Video management", "/video-management", Video],
   ["Social media", "/social-media", Share2],
   ["Manage Ads", "/ads", CircleDollarSign],
-  ["Notification", "/notification", Bell],
+  ["Manage Category", "/category", Layers3],
   ["Administrators", "/adminstrator", Users],
   ["Settings", "/settings", Settings],
 ] as const;

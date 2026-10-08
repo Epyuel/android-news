@@ -1,5 +1,6 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 
 function getAdminApp() {
@@ -26,6 +27,47 @@ export function getAdminAuth() {
 
 export function getAdminMessaging() {
   return getMessaging(getAdminApp());
+}
+
+export function getAdminFirestore() {
+  return getFirestore(getAdminApp());
+}
+
+export async function sendPushToRegisteredDevices(message: {
+  title: string;
+  body: string;
+  image?: string;
+  data: Record<string, string>;
+}) {
+  const tokenSnapshot = await getAdminFirestore().collection("deviceTokens").get();
+  const tokens = tokenSnapshot.docs
+    .filter((item) => item.data().enabled !== false)
+    .map((item) => String(item.data().token || item.id).trim())
+    .filter(Boolean);
+
+  if (!tokens.length)
+    throw new Error("No mobile devices are registered for notifications. Enable push notifications in the mobile app first.");
+
+  const messaging = getAdminMessaging();
+  const results = await Promise.all(
+    Array.from({ length: Math.ceil(tokens.length / 500) }, (_, batchIndex) =>
+      messaging.sendEachForMulticast({
+        tokens: tokens.slice(batchIndex * 500, batchIndex * 500 + 500),
+        notification: {
+          title: message.title,
+          body: message.body,
+          ...(message.image ? { imageUrl: message.image } : {}),
+        },
+        android: {
+          priority: "high",
+          ...(message.image ? { notification: { imageUrl: message.image } } : {}),
+        },
+        data: message.data,
+      }),
+    ),
+  );
+  if (results.every((result) => result.successCount === 0))
+    throw new Error("Notification could not be delivered to any registered mobile device.");
 }
 
 export async function authorizeAdmin(request: Request) {
