@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "react-quill-new/dist/quill.snow.css";
 import type Quill from "quill";
@@ -13,6 +14,12 @@ const QuillEditor = dynamic(async () => {
   const Font = quillModule.default.import("formats/font") as { whitelist: string[] };
   Font.whitelist = ["sans-serif", "serif", "monospace", "cursive", "fantasy"];
   quillModule.default.register("formats/font", Font, true);
+  const Parchment = quillModule.default.import("parchment");
+  const mobileButton = new Parchment.Attributor("mobileButton", "data-mobile-button", {
+    scope: Parchment.Scope.INLINE,
+    whitelist: ["true"],
+  });
+  quillModule.default.register(mobileButton, true);
   return reactQuill.default;
 }, {
   ssr: false,
@@ -21,7 +28,7 @@ const QuillEditor = dynamic(async () => {
 
 const formats = [
   "header", "bold", "italic", "underline", "strike", "script", "list", "indent",
-  "align", "color", "background", "blockquote", "code-block", "link", "image", "video", "table", "font", "size",
+  "align", "color", "background", "blockquote", "code-block", "link", "mobileButton", "image", "video", "table", "font", "size",
 ];
 
 const emojiOptions = [
@@ -148,8 +155,16 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
   const resizeCleanupRef = useRef<(() => void) | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
+  const linkSelectionRef = useRef<{ index: number; length: number } | null>(null);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState({ left: 8, top: 120 });
+  const [linkButtonOpen, setLinkButtonOpen] = useState(false);
+  const [linkButtonLabel, setLinkButtonLabel] = useState("");
+  const [linkButtonUrl, setLinkButtonUrl] = useState("");
+  const [linkButtonError, setLinkButtonError] = useState("");
+  const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkPopoverPosition, setLinkPopoverPosition] = useState({ left: 12, top: 12 });
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
@@ -175,10 +190,28 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         ["link", "image", "video", "table", { emoji: ["😀", "😂", "😊", "❤️", "🎉", "✨", "📱", "🔥", "✅", "⭐"] }],
         [{ emoji: emojiOptions }],
         ["emojiPicker"],
+        ["linkButton"],
         ["deleteRow", "deleteColumn", "deleteTable"],
         ["clean"],
       ],
       handlers: {
+        link(this: ToolbarContext) {
+          const quill = this.quill;
+          const selection = quill.getSelection(true);
+          if (!selection) return;
+          quillRef.current = quill;
+          linkSelectionRef.current = selection;
+          const format = quill.getFormat(selection);
+          setLinkUrl(typeof format.link === "string" ? format.link : "");
+          const editor = quill.root.getBoundingClientRect();
+          const bounds = quill.getBounds(selection.index);
+          const width = Math.min(320, window.innerWidth - 24);
+          const left = Math.max(12, Math.min(editor.left + bounds.left, window.innerWidth - width - 12));
+          const below = editor.top + bounds.bottom + 8;
+          const top = below + 112 <= window.innerHeight ? below : Math.max(12, editor.top + bounds.top - 112);
+          setLinkPopoverPosition({ left, top });
+          setLinkPopoverOpen(true);
+        },
         formatStyle(this: ToolbarContext, style: string | false) {
           const quill = this.quill;
           quill.format("header", false, "user");
@@ -210,6 +243,24 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           ensureTableResizing(this.quill);
           (this.quill.getModule("table") as QuillTableModule).deleteTable();
         },
+        linkButton(this: ToolbarContext) {
+          const quill = this.quill;
+          const selection = quill.getSelection(true);
+          if (!selection) return;
+          quillRef.current = quill;
+          linkSelectionRef.current = selection;
+          const editor = quill.root.getBoundingClientRect();
+          const bounds = quill.getBounds(selection.index);
+          const width = Math.min(352, window.innerWidth - 24);
+          const left = Math.max(12, Math.min(editor.left + bounds.left, window.innerWidth - width - 12));
+          const below = editor.top + bounds.bottom + 8;
+          const top = below + 220 <= window.innerHeight ? below : Math.max(12, editor.top + bounds.top - 220);
+          setLinkPopoverPosition({ left, top });
+          setLinkButtonLabel(quill.getText(selection.index, selection.length).trim());
+          setLinkButtonUrl("");
+          setLinkButtonError("");
+          setLinkButtonOpen(true);
+        },
         emojiPicker(this: ToolbarContext) {
           quillRef.current = this.quill;
           const button = wrapperRef.current?.querySelector<HTMLElement>(".ql-emojiPicker");
@@ -233,8 +284,59 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     },
   }), [ensureTableResizing]);
 
+  const insertLinkButton = () => {
+    const quill = quillRef.current;
+    const selection = linkSelectionRef.current;
+    const label = linkButtonLabel.trim();
+    const rawUrl = linkButtonUrl.trim();
+    if (!quill || !selection || !label || !rawUrl) return;
+
+    const url = /^(https?:\/\/|mailto:|tel:)/i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+    try {
+      const parsed = new URL(url);
+      if (!["http:", "https:", "mailto:", "tel:"].includes(parsed.protocol)) throw new Error();
+    } catch {
+      setLinkButtonError("Enter a valid web, email, or phone link.");
+      return;
+    }
+
+    quill.focus();
+    if (selection.length) {
+      quill.formatText(selection.index, selection.length, { link: url, mobileButton: "true" }, "user");
+    } else {
+      quill.insertText(selection.index, label, { link: url, mobileButton: "true" }, "user");
+    }
+    quill.setSelection(selection.index + (selection.length || label.length), 0, "silent");
+    setLinkButtonOpen(false);
+    setLinkButtonError("");
+  };
+
+  const insertRegularLink = () => {
+    const quill = quillRef.current;
+    const selection = linkSelectionRef.current;
+    const rawUrl = linkUrl.trim();
+    if (!quill || !selection || !rawUrl) return;
+
+    const url = /^(https?:\/\/|mailto:|tel:)/i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+    try {
+      const parsed = new URL(url);
+      if (!["http:", "https:", "mailto:", "tel:"].includes(parsed.protocol)) throw new Error();
+    } catch {
+      return;
+    }
+
+    quill.focus();
+    if (selection.length) {
+      quill.formatText(selection.index, selection.length, "link", url, "user");
+    } else {
+      quill.insertText(selection.index, url, { link: url }, "user");
+    }
+    quill.setSelection(selection.index + (selection.length || url.length), 0, "silent");
+    setLinkPopoverOpen(false);
+  };
+
   return (
-    <div ref={wrapperRef} className="rich-text-editor relative overflow-hidden rounded-xl border border-[#dfe8f1] bg-white">
+    <div ref={wrapperRef} className="rich-text-editor relative rounded-xl border border-[#dfe8f1] bg-white">
       <QuillEditor
         theme="snow"
         value={value}
@@ -272,6 +374,86 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
             </button>
           ))}
         </div>
+      ) : null}
+      {linkButtonOpen ? (
+        createPortal(<div
+          className="fixed z-[100] w-[min(22rem,calc(100vw-1.5rem))] space-y-3 rounded-lg border border-[#dfe8f1] bg-white p-4 shadow-xl"
+          style={linkPopoverPosition}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
+              event.preventDefault();
+              insertLinkButton();
+            }
+          }}
+        >
+          <div className="text-sm font-semibold text-[#1b2b42]">Add mobile button link</div>
+          <label className="block space-y-1 text-xs font-medium text-[#53657b]">
+            Button text
+            <input
+              autoFocus
+              value={linkButtonLabel}
+              onChange={(event) => setLinkButtonLabel(event.target.value)}
+              placeholder="Download Now"
+              className="w-full rounded-md border border-[#d5dfeb] px-3 py-2 text-sm text-[#1b2b42] outline-none focus:border-[#147fe8]"
+            />
+          </label>
+          <label className="block space-y-1 text-xs font-medium text-[#53657b]">
+            Link URL
+            <input
+              value={linkButtonUrl}
+              onChange={(event) => setLinkButtonUrl(event.target.value)}
+              placeholder="https://example.com"
+              inputMode="url"
+              className="w-full rounded-md border border-[#d5dfeb] px-3 py-2 text-sm text-[#1b2b42] outline-none focus:border-[#147fe8]"
+            />
+          </label>
+          {linkButtonError ? <p className="text-xs text-red-600">{linkButtonError}</p> : null}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-md px-3 py-2 text-sm text-[#53657b] hover:bg-[#f2f5f9]"
+              onClick={() => setLinkButtonOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={!linkButtonLabel.trim() || !linkButtonUrl.trim()}
+              className="rounded-md bg-[#147fe8] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              onClick={insertLinkButton}
+            >
+              Insert button
+            </button>
+          </div>
+        </div>, document.body)
+      ) : null}
+      {linkPopoverOpen && typeof document !== "undefined" ? createPortal(
+        <form
+          className="fixed z-[100] flex w-[min(20rem,calc(100vw-1.5rem))] items-center gap-2 rounded-lg border border-[#dfe8f1] bg-white p-2 shadow-xl"
+          style={linkPopoverPosition}
+          onSubmit={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            insertRegularLink();
+          }}
+        >
+          <input
+            autoFocus
+            aria-label="Link URL"
+            value={linkUrl}
+            onChange={(event) => setLinkUrl(event.target.value)}
+            placeholder="https://example.com"
+            inputMode="url"
+            className="min-w-0 flex-1 rounded-md border border-[#d5dfeb] px-2 py-1.5 text-sm text-[#1b2b42] outline-none focus:border-[#147fe8]"
+          />
+          <button type="submit" className="rounded-md px-2 py-1.5 text-sm font-semibold text-[#147fe8] hover:bg-[#eef4fa]">
+            Save
+          </button>
+          <button type="button" aria-label="Close link editor" className="rounded-md px-2 py-1.5 text-sm text-[#53657b] hover:bg-[#f2f5f9]" onClick={() => setLinkPopoverOpen(false)}>
+            x
+          </button>
+        </form>,
+        document.body,
       ) : null}
     </div>
   );

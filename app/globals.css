@@ -61,6 +61,16 @@
   font-style: normal;
 }
 
+.rich-text-editor .ql-editor [data-mobile-button="true"] {
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #fff1f0;
+  color: #b42318 !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .rich-text-editor .ql-toolbar .ql-formats:nth-child(9) .ql-emoji {
   display: none;
 }
@@ -89,6 +99,18 @@
 
 .rich-text-editor .ql-toolbar .ql-emojiPicker::after {
   content: "Emoji";
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rich-text-editor .ql-toolbar .ql-linkButton {
+  width: auto;
+  min-width: 82px;
+  padding: 0 5px;
+}
+
+.rich-text-editor .ql-toolbar .ql-linkButton::after {
+  content: "Link button";
   font-size: 10px;
   font-weight: 700;
 }
