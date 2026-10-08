@@ -190,7 +190,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
         ["link", "image", "video", "table", { emoji: ["😀", "😂", "😊", "❤️", "🎉", "✨", "📱", "🔥", "✅", "⭐"] }],
         [{ emoji: emojiOptions }],
         ["emojiPicker"],
-        ["linkButton"],
+        // ["linkButton"],
         ["deleteRow", "deleteColumn", "deleteTable"],
         ["clean"],
       ],
