@@ -206,9 +206,9 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           const editor = quill.root.getBoundingClientRect();
           const bounds = quill.getBounds(selection.index);
           const width = Math.min(320, window.innerWidth - 24);
-          const left = Math.max(12, Math.min(editor.left + bounds.left, window.innerWidth - width - 12));
-          const below = editor.top + bounds.bottom + 8;
-          const top = below + 112 <= window.innerHeight ? below : Math.max(12, editor.top + bounds.top - 112);
+          const left = Math.max(12, Math.min(editor.left + (bounds?.left??0), window.innerWidth - width - 12));
+          const below = editor.top + (bounds?.bottom??0) + 8;
+          const top = below + 112 <= window.innerHeight ? below : Math.max(12, editor.top + (bounds?.top??0) - 112);
           setLinkPopoverPosition({ left, top });
           setLinkPopoverOpen(true);
         },
@@ -252,9 +252,9 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
           const editor = quill.root.getBoundingClientRect();
           const bounds = quill.getBounds(selection.index);
           const width = Math.min(352, window.innerWidth - 24);
-          const left = Math.max(12, Math.min(editor.left + bounds.left, window.innerWidth - width - 12));
-          const below = editor.top + bounds.bottom + 8;
-          const top = below + 220 <= window.innerHeight ? below : Math.max(12, editor.top + bounds.top - 220);
+          const left = Math.max(12, Math.min(editor.left + (bounds?.left??0), window.innerWidth - width - 12));
+          const below = editor.top + (bounds?.bottom??0) + 8;
+          const top = below + 220 <= window.innerHeight ? below : Math.max(12, editor.top + (bounds?.top??0) - 220);
           setLinkPopoverPosition({ left, top });
           setLinkButtonLabel(quill.getText(selection.index, selection.length).trim());
           setLinkButtonUrl("");
