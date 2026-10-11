@@ -71,7 +71,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </nav>
 
       <footer className="mt-auto border-t border-[#dfe8f2] px-3 pt-5 text-[11px] leading-7 text-[#8ba0bc]">
-        Copyright © {(new Date()).getFullYear()} Epdemrew
+        Copyright © {(new Date()).getFullYear()} Onetechnews24@gmail.com
       </footer>
     </aside>
   );
