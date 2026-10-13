@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+.privacy-policy-content {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.privacy-policy-content * {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+}
+
+.privacy-policy-content pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .rich-text-editor .ql-toolbar.ql-snow {
   border: 0;
   border-bottom: 1px solid #edf2f7;
