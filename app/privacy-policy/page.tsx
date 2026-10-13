@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { getAdminFirestore } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
@@ -170,9 +170,6 @@ export default async function PrivacyPolicyPage() {
             <header className="border-b border-white/10 bg-[#102238] text-white">
                 <div className="mx-auto flex min-h-16 max-w-5xl items-center justify-between px-5 sm:px-8">
                     <Link href="/" className="text-sm font-bold tracking-wide">DANA HD</Link>
-                    <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white">
-                        <ArrowLeft size={16} /> Home
-                    </Link>
                 </div>
             </header>
             <section className="mx-auto max-w-5xl px-5 pb-16 pt-10 sm:px-8 sm:pt-14">
