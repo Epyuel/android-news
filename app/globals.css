@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
-.privacy-policy-content {
+.public-legal-content {
   width: 100%;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.privacy-policy-content * {
+.public-legal-content * {
   max-width: 100%;
   min-width: 0;
   white-space: normal;
 }
 
-.privacy-policy-content pre {
+.public-legal-content pre {
   overflow-x: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
